@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speech to Text</title>
+</head>
+<body>
+  <h1>Speech to Text Streaming</h1>
+  <button id="start">Start Recording</button>
+  <button id="stop" disabled>Stop Recording</button>
+  <p id="transcript"></p>
+
+  <script>
+    const startButton = document.getElementById('start');
+    const stopButton = document.getElementById('stop');
+    const transcriptParagraph = document.getElementById('transcript');
+
+    let recognition;
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+    } else if ('SpeechRecognition' in window) {
+      recognition = new SpeechRecognition();
+    } else {
+      console.log('Speech recognition not supported');
+    }
+
+    if (recognition) {
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        transcriptParagraph.textContent = '';
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+        }
+        transcriptParagraph.textContent = transcript;
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event);
+      };
+
+      recognition.onend = () => {
+        startButton.disabled = false;
+        stopButton.disabled = true;
+      };
+
+      startButton.addEventListener('click', () => {
+        recognition.start();
+      });
+
+      stopButton.addEventListener('click', () => {
+        recognition.stop();
+      });
+    }
+  </script>
+</body>
+</html>
